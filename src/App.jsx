@@ -8,6 +8,7 @@ import CompanyDashboard from './pages/CompanyDashboard'
 import Applicants from './pages/Applicants'
 import JobHuntBoard from './pages/JobHuntBoard'
 
+
 function App() {
   return (
     <AuthProvider>
