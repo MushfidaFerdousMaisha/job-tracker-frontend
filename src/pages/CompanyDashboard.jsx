@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import API from '../api'
+import ConfirmModal from '../components/ConfirmModal'
 
 const CompanyDashboard = () => {
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [formData, setFormData] = useState({
     title: '', description: '', skillsRequired: '', salary: '', location: ''
   })
@@ -20,7 +22,7 @@ const CompanyDashboard = () => {
   const fetchJobs = async () => {
     try {
       const { data } = await API.get('/jobs')
-      const myJobs = data.filter(job => job.postedBy?._id === user?._id)
+      const myJobs = data.filter(job => job.postedBy?._id?.toString() === user?._id?.toString())
       setJobs(myJobs)
     } catch (error) {
       console.error(error)
@@ -45,16 +47,18 @@ const CompanyDashboard = () => {
     }
   }
 
+  const confirmLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-blue-600">Job Tracker — Company</h1>
         <div className="flex items-center gap-4">
           <span className="text-gray-600">Welcome, {user?.name}!</span>
-          <button
-            onClick={() => { logout(); navigate('/login') }}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-          >
+          <button onClick={() => setShowLogoutModal(true)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
             Logout
           </button>
         </div>
@@ -63,10 +67,7 @@ const CompanyDashboard = () => {
       <div className="max-w-6xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Your Job Postings</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
+          <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
             {showForm ? 'Cancel' : '+ Post New Job'}
           </button>
         </div>
@@ -76,49 +77,24 @@ const CompanyDashboard = () => {
             <h3 className="text-lg font-bold mb-4">Post a New Job</h3>
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Job Title"
-                  value={formData.title}
+                <input type="text" placeholder="Job Title" value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Skills (comma separated: React, Node.js)"
-                  value={formData.skillsRequired}
+                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500" required />
+                <input type="text" placeholder="Skills (comma separated: React, Node.js)" value={formData.skillsRequired}
                   onChange={(e) => setFormData({...formData, skillsRequired: e.target.value})}
-                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Salary"
-                  value={formData.salary}
+                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500" required />
+                <input type="text" placeholder="Salary" value={formData.salary}
                   onChange={(e) => setFormData({...formData, salary: e.target.value})}
-                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={formData.location}
+                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500" />
+                <input type="text" placeholder="Location" value={formData.location}
                   onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500"
-                />
-                <textarea
-                  placeholder="Job Description"
-                  value={formData.description}
+                  className="border rounded-lg p-3 focus:outline-none focus:border-blue-500" />
+                <textarea placeholder="Job Description" value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   className="border rounded-lg p-3 focus:outline-none focus:border-blue-500 md:col-span-2"
-                  rows="3"
-                  required
-                />
+                  rows="3" required />
               </div>
-              <button
-                type="submit"
-                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-              >
+              <button type="submit" className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
                 Post Job
               </button>
             </form>
@@ -137,9 +113,7 @@ const CompanyDashboard = () => {
                 <p className="text-gray-600 mt-2 text-sm">{job.description}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {job.skillsRequired?.map((skill, index) => (
-                    <span key={index} className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">
-                      {skill}
-                    </span>
+                    <span key={index} className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">{skill}</span>
                   ))}
                 </div>
                 <div className="mt-3 flex justify-between">
@@ -157,6 +131,16 @@ const CompanyDashboard = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        confirmColor="bg-red-500 hover:bg-red-600"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </div>
   )
 }

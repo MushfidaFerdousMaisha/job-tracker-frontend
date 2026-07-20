@@ -27,7 +27,7 @@ const Login = () => {
         navigate('/dashboard')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong')
+      setError('Invalid email or password. Please try again.')
     }
     setLoading(false)
   }

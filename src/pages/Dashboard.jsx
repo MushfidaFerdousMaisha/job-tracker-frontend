@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import API from '../api'
+import ConfirmModal from '../components/ConfirmModal'
 
 const Dashboard = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [applications, setApplications] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   useEffect(() => {
     fetchApplications()
@@ -23,7 +25,7 @@ const Dashboard = () => {
     setLoading(false)
   }
 
-  const handleLogout = () => {
+  const confirmLogout = () => {
     logout()
     navigate('/login')
   }
@@ -41,23 +43,16 @@ const Dashboard = () => {
         <h1 className="text-xl font-bold text-blue-600">Job Tracker</h1>
         <div className="flex items-center gap-4">
           <span className="text-gray-600">Welcome, {user?.name}!</span>
-          <button
-            onClick={() => navigate('/jobs')}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          >
+          <button onClick={() => navigate('/profile')} className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+            My Profile
+          </button>
+          <button onClick={() => navigate('/jobs')} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
             Browse Jobs
           </button>
-          <button
-            onClick={() => navigate('/jobhuntboard')}
-            className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600"
-          >
+          <button onClick={() => navigate('/jobhuntboard')} className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600">
             Job Hunt Board
           </button>
-         
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-          >
+          <button onClick={() => setShowLogoutModal(true)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
             Logout
           </button>
         </div>
@@ -91,10 +86,7 @@ const Dashboard = () => {
         ) : applications.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-500 mb-4">No applications yet!</p>
-            <button
-              onClick={() => navigate('/jobs')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
+            <button onClick={() => navigate('/jobs')} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
               Browse Jobs
             </button>
           </div>
@@ -105,9 +97,7 @@ const Dashboard = () => {
                 <div>
                   <h4 className="font-bold text-gray-800">{app.job?.title}</h4>
                   <p className="text-gray-500 text-sm">{app.job?.location} • {app.job?.salary}</p>
-                  <p className="text-gray-400 text-xs mt-1">
-                    Applied: {new Date(app.createdAt).toLocaleDateString()}
-                  </p>
+                  <p className="text-gray-400 text-xs mt-1">Applied: {new Date(app.createdAt).toLocaleDateString()}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                   app.status === 'shortlisted' ? 'bg-green-100 text-green-600' :
@@ -122,6 +112,16 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        confirmColor="bg-red-500 hover:bg-red-600"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </div>
   )
 }
